@@ -94,6 +94,45 @@ install.packages("lmtest")
 install.packages("car")
 library(lmtest)
 library(car)
+
+#Plot ut-ut-1 graph to check for autocorrelation
+ut_model1<- residuals(model1)
+ut_model2<- residuals(model2)
+ut_model3<- residuals(model3)
+ut_model4<- residuals(model4)
+ut_model5<- residuals(model5)
+
+ut1_model1 <- lag(ut_model1, n=1)  # Lag by 1
+ut1_model2 <- lag(ut_model2, n=1)
+ut1_model3 <- lag(ut_model3, n=1)
+ut1_model4 <- lag(ut_model4, n=1)
+ut1_model5 <- lag(ut_model5, n=1)
+
+#ut-ut-1 graph
+plot(ut_model1, ut1_model1, main = "ut vs ut-1 for Apple", xlab = "ut", ylab = "ut-1")
+plot(ut_model2, ut1_model2, main = "ut vs ut-1 for AMD", xlab = "ut", ylab = "ut-1")
+plot(ut_model3, ut1_model3, main = "ut vs ut-1 for AMZN", xlab = "ut", ylab = "ut-1")
+plot(ut_model4, ut1_model4, main = "ut vs ut-1 for INTC", xlab = "ut", ylab = "ut-1")
+plot(ut_model5, ut1_model5, main = "ut vs ut-1 for MSFT", xlab = "ut", ylab = "ut-1")
+
+#ut-time graph
+plot(df_Apple$ref_date[-1], ut_model1, main = "ut vs time for Apple",
+     type="l", xlab = "ut", ylab = "time")
+
+plot(df_AMD$ref_date[-1], ut_model2, main = "ut vs time for AMD",
+     type="l", xlab = "ut", ylab = "time")
+
+plot(df_AMZN$ref_date[-1], ut_model3, main = "ut vs time for AMZN",
+     type="l", xlab = "ut", ylab = "time")
+
+plot(df_INTC$ref_date[-1], ut_model4, main = "ut vs time for INTC",
+     type="l", xlab = "ut", ylab = "time")
+
+plot(df_MSFT$ref_date[-1], ut_model5, main = "ut vs time for MSFT",
+     type="l", xlab = "ut", ylab = "time")
+
+
+#DW test
 dwtest(model1)
 dwtest(model2)
 dwtest(model3)

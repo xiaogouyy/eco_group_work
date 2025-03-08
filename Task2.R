@@ -108,35 +108,57 @@ library(forecast)
 
 ##ACF plot for five stocks
 acf(df_nvda_clean$log_return_nvda, 
-    main = "ACF of NVDA Log Returns", 48) 
+    main = "ACF of NVDA Log Returns", xlim = c(1, 12)) 
 
 acf(df_ko_clean$log_return_ko, 
-    main = "ACF of KO Log Returns", 48) 
+    main = "ACF of KO Log Returns", xlim = c(1, 12)) 
 
 acf(df_jnj_clean$log_return_jnj, 
-    main = "ACF of JNJ Log Returns", 48) 
+    main = "ACF of JNJ Log Returns", xlim = c(1, 12)) 
 
 acf(df_mcd_clean$log_return_mcd, 
-    main = "ACF of MCD Log Returns", 48) 
+    main = "ACF of MCD Log Returns", xlim = c(1, 12)) 
 
 acf(df_googl_clean$log_return_googl, 
-    main = "ACF of GOOGL Log Returns", 48) 
+    main = "ACF of GOOGL Log Returns", xlim = c(1, 12)) 
 
 ##PACF plot for five stocks
 pacf(df_nvda_clean$log_return_nvda, 
-     main = "PACF of NVDA Log Returns", 48)
+     main = "PACF of NVDA Log Returns", xlim = c(1, 12))
 
 pacf(df_ko_clean$log_return_ko, 
-     main = "PACF of KO Log Returns", 48)
+     main = "PACF of KO Log Returns", xlim = c(1, 12))
 
 pacf(df_jnj_clean$log_return_jnj, 
-    main = "PACF of JNJ Log Returns", 48)
+    main = "PACF of JNJ Log Returns", xlim = c(1, 12))
 
 pacf(df_mcd_clean$log_return_mcd, 
-     main = "PACF of MCD Log Returns", 48)
+     main = "PACF of MCD Log Returns", xlim = c(1, 12))
 
 pacf(df_googl_clean$log_return_googl, 
-     main = "PACF of GOOGL Log Returns", 48)
+     main = "PACF of GOOGL Log Returns", xlim = c(1, 12))
+
+####2.3 Build ARMA model
+#NVDA's ARMA(1,0,1) model
+arma101_model_nvda <- arima(df_nvda_clean$log_return_nvda, order = c(1, 0, 1))
+summary(arma101_model_nvda)
+
+#KO's ARMA(2,0,2) model
+arma202_model_ko <- arima(df_ko_clean$log_return_ko, order = c(2, 0, 2))
+summary(arma202_model_ko)
+
+#JNJ's ARMA(2,0,2) model
+arma202_model_jnj <- arima(df_jnj_clean$log_return_jnj, order = c(2, 0, 2))
+summary(arma202_model_jnj)
+
+#MCD's ARMA(2,0,2) model
+arma202_model_mcd <- arima(df_mcd_clean$log_return_mcd, order = c(2, 0, 2))
+summary(arma202_model_mcd)
+
+#GOOGL's ARMA(1,0,1) model
+arma101_model_googl <- arima(df_googl_clean$log_return_googl, order = c(1, 0, 1))
+summary(arma101_model_googl)
+
 
 
 ####2.4 Build CAPM models

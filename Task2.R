@@ -121,6 +121,8 @@ acf(df_mcd_clean$log_return_mcd,
 
 acf(df_googl_clean$log_return_googl, 
     main = "ACF of GOOGL Log Returns", xlim = c(1, 12)) 
+acf(df_googl_clean$log_return_googl, 
+    main = "ACF of GOOGL Log Returns", 48) 
 
 ##PACF plot for five stocks
 pacf(df_nvda_clean$log_return_nvda, 
@@ -138,28 +140,78 @@ pacf(df_mcd_clean$log_return_mcd,
 pacf(df_googl_clean$log_return_googl, 
      main = "PACF of GOOGL Log Returns", xlim = c(1, 12))
 
+pacf(df_googl_clean$log_return_googl, 
+     main = "PACF of GOOGL Log Returns", 48)
+
+## Ljung-Box test using log return series
+#Ljung-Box test for NVDA's series.
+Box.test(df_nvda_clean$log_return_nvda, lag=12, type = "Ljung-Box")
+
+#Ljung-Box test for KO's series.
+Box.test(df_ko_clean$log_return_ko, type = "Ljung-Box", lag = 2+2+10)
+
+#Ljung-Box test for JNJ's series.
+Box.test(df_jnj_clean$log_return_jnj, type = "Ljung-Box", lag = 2+2+10)
+
+#Ljung-Box test for MCD's series.
+Box.test(df_mcd_clean$log_return_mcd, type = "Ljung-Box", lag = 2+2+10)
+Box.test(df_mcd_clean$log_return_mcd, type = "Ljung-Box", lag = 12)
+
+#Ljung-Box test for GOOGL's series.
+Box.test(df_googl_clean$log_return_googl, type = "Ljung-Box", lag = 1+1+10)
+
+##time series plots
+plot(df_nvda_clean$ref.date, df_nvda_clean$log_return_nvda, type = "l",
+     xlab = "Date", ylab = "log return", main = "NVDA log return time series")
+
 ####2.3 Build ARMA model
-#NVDA's ARMA(1,0,1) model
-arma101_model_nvda <- arima(df_nvda_clean$log_return_nvda, order = c(1, 0, 1))
-summary(arma101_model_nvda)
+##Identification
+#ADF test for NVDA
+library(tseries)
+adf.test(df_nvda_clean$log_return_nvda)
+#ADF test for KO
+adf.test(df_ko_clean$log_return_ko)
+#ADF test for JNJ
+adf.test(df_jnj_clean$log_return_jnj)
+#ADF test for MCD
+adf.test(df_mcd_clean$log_return_mcd)
+#ADF test for GOOGL
+adf.test(df_googl_clean$log_return_googl)
 
-#KO's ARMA(2,0,2) model
-arma202_model_ko <- arima(df_ko_clean$log_return_ko, order = c(2, 0, 2))
-summary(arma202_model_ko)
+##Estimation
+#JNJ's ARMA model
+arma_model_jnj <- auto.arima(df_jnj_clean$log_return_jnj, seasonal = TRUE, 
+                                approximation = FALSE, trace = TRUE)
+summary(arma_model_jnj)
 
-#JNJ's ARMA(2,0,2) model
-arma202_model_jnj <- arima(df_jnj_clean$log_return_jnj, order = c(2, 0, 2))
-summary(arma202_model_jnj)
+#MCD's ARMA model
+arma_model_mcd <- auto.arima(df_mcd_clean$log_return_mcd, seasonal = TRUE, 
+                                approximation = FALSE, trace = TRUE)
+summary(arma_model_mcd)
 
-#MCD's ARMA(2,0,2) model
-arma202_model_mcd <- arima(df_mcd_clean$log_return_mcd, order = c(2, 0, 2))
-summary(arma202_model_mcd)
+#GOOGL's ARMA model
+arma_model_googl <- auto.arima(df_googl_clean$log_return_googl, seasonal = TRUE, 
+                               approximation = FALSE, trace = TRUE)
+summary(arma_model_googl)
 
-#GOOGL's ARMA(1,0,1) model
-arma101_model_googl <- arima(df_googl_clean$log_return_googl, order = c(1, 0, 1))
-summary(arma101_model_googl)
+##Diagnostic check
+residuals_arma_jnj <- residuals(arma_model_jnj)
+residuals_arma_mcd <- residuals(arma_model_mcd)
+residuals_arma_googl <- residuals(arma_model_googl)
 
+#Ljung-Box test for residuals
+Box.test(residuals_arma_jnj, lag = 12, type = "Ljung-Box")
+Box.test(residuals_arma_mcd, lag = 13, type = "Ljung-Box")
+Box.test(residuals_arma_googl, lag = 11, type = "Ljung-Box")
 
+#ACF and PACF plot for residuals
+acf(residuals_arma_jnj, main = "ACF of JNJ ARMA Residuals", xlim = c(1,12))
+acf(residuals_arma_mcd, main = "ACF of MCD ARMA Residuals", xlim = c(1,12))
+acf(residuals_arma_googl, main = "ACF of GOOGL ARMA Residuals", xlim = c(1,12))
+
+pacf(residuals_arma_jnj, main = "ACF of JNJ ARMA Residuals", xlim = c(1,12))
+pacf(residuals_arma_mcd, main = "ACF of MCD ARMA Residuals", xlim = c(1,12))
+pacf(residuals_arma_googl, main = "ACF of GOOGL ARMA Residuals", xlim = c(1,12))
 
 ####2.4 Build CAPM models
 #get risk free rate fed rate
@@ -235,3 +287,5 @@ summary(lm_mcd)
 #GOOGL's model
 lm_googl <- lm(y_googl ~ x_googl, data = df_googl_clean) 
 summary(lm_googl)
+
+

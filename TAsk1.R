@@ -224,3 +224,7 @@ coeftest(model1, vcov = vcovHC(model1, type = "HC0"))
 coeftest(model2, vcov = vcovHC(model2, type = "HC0"))
 coeftest(model5, vcov = vcovHC(model5, type = "HC0"))
 
+system("git push origin main") 
+system("git pull origin main --rebase")
+system("git push --force origin main")
+

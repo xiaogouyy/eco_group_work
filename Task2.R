@@ -108,37 +108,37 @@ library(forecast)
 
 ##ACF plot for five stocks
 acf(df_nvda_clean$log_return_nvda, 
-    main = "ACF of NVDA Log Returns", xlim = c(1, 12)) 
+    main = "ACF of NVDA Log Returns", xlim = c(1, 20)) 
 
 acf(df_ko_clean$log_return_ko, 
-    main = "ACF of KO Log Returns", xlim = c(1, 12)) 
+    main = "ACF of KO Log Returns", xlim = c(1, 20)) 
 
 acf(df_jnj_clean$log_return_jnj, 
-    main = "ACF of JNJ Log Returns", xlim = c(1, 12)) 
+    main = "ACF of JNJ Log Returns", xlim = c(1, 20)) 
 
 acf(df_mcd_clean$log_return_mcd, 
-    main = "ACF of MCD Log Returns", xlim = c(1, 12)) 
+    main = "ACF of MCD Log Returns", xlim = c(1, 20)) 
 
 acf(df_googl_clean$log_return_googl, 
-    main = "ACF of GOOGL Log Returns", xlim = c(1, 12)) 
+    main = "ACF of GOOGL Log Returns", xlim = c(1, 20)) 
 acf(df_googl_clean$log_return_googl, 
     main = "ACF of GOOGL Log Returns", 48) 
 
 ##PACF plot for five stocks
 pacf(df_nvda_clean$log_return_nvda, 
-     main = "PACF of NVDA Log Returns", xlim = c(1, 12))
+     main = "PACF of NVDA Log Returns", xlim = c(1, 20))
 
 pacf(df_ko_clean$log_return_ko, 
-     main = "PACF of KO Log Returns", xlim = c(1, 12))
+     main = "PACF of KO Log Returns", xlim = c(1, 20))
 
 pacf(df_jnj_clean$log_return_jnj, 
-    main = "PACF of JNJ Log Returns", xlim = c(1, 12))
+    main = "PACF of JNJ Log Returns", xlim = c(1, 20))
 
 pacf(df_mcd_clean$log_return_mcd, 
-     main = "PACF of MCD Log Returns", xlim = c(1, 12))
+     main = "PACF of MCD Log Returns", xlim = c(1, 20))
 
 pacf(df_googl_clean$log_return_googl, 
-     main = "PACF of GOOGL Log Returns", xlim = c(1, 12))
+     main = "PACF of GOOGL Log Returns", xlim = c(1, 20))
 
 pacf(df_googl_clean$log_return_googl, 
      main = "PACF of GOOGL Log Returns", 48)
@@ -146,23 +146,23 @@ pacf(df_googl_clean$log_return_googl,
 ## Ljung-Box test using log return series
 #Ljung-Box test for NVDA's series.
 Box.test(df_nvda_clean$log_return_nvda, lag=12, type = "Ljung-Box")
+Box.test(df_nvda_clean$log_return_nvda, lag=2, type = "Ljung-Box")
 
 #Ljung-Box test for KO's series.
-Box.test(df_ko_clean$log_return_ko, type = "Ljung-Box", lag = 2+2+10)
+Box.test(df_ko_clean$log_return_ko, type = "Ljung-Box", lag = 12)
+Box.test(df_ko_clean$log_return_ko, type = "Ljung-Box", lag = 2)
 
 #Ljung-Box test for JNJ's series.
-Box.test(df_jnj_clean$log_return_jnj, type = "Ljung-Box", lag = 2+2+10)
+Box.test(df_jnj_clean$log_return_jnj, type = "Ljung-Box", lag = 12)
+Box.test(df_jnj_clean$log_return_jnj, type = "Ljung-Box", lag = 2)
 
 #Ljung-Box test for MCD's series.
-Box.test(df_mcd_clean$log_return_mcd, type = "Ljung-Box", lag = 2+2+10)
 Box.test(df_mcd_clean$log_return_mcd, type = "Ljung-Box", lag = 12)
+Box.test(df_mcd_clean$log_return_mcd, type = "Ljung-Box", lag = 2)
 
 #Ljung-Box test for GOOGL's series.
-Box.test(df_googl_clean$log_return_googl, type = "Ljung-Box", lag = 1+1+10)
-
-##time series plots
-plot(df_nvda_clean$ref.date, df_nvda_clean$log_return_nvda, type = "l",
-     xlab = "Date", ylab = "log return", main = "NVDA log return time series")
+Box.test(df_googl_clean$log_return_googl, type = "Ljung-Box", lag = 12)
+Box.test(df_googl_clean$log_return_googl, type = "Ljung-Box", lag = 2)
 
 ####2.3 Build ARMA model
 ##Identification
@@ -179,39 +179,56 @@ adf.test(df_mcd_clean$log_return_mcd)
 adf.test(df_googl_clean$log_return_googl)
 
 ##Estimation
-#JNJ's ARMA model
+#KO's optimal ARMA model
+arma_model_ko <- auto.arima(df_ko_clean$log_return_ko, seasonal = TRUE, 
+                             approximation = FALSE, trace = TRUE)
+summary(arma_model_ko)
+
+#JNJ's optimal ARMA model
 arma_model_jnj <- auto.arima(df_jnj_clean$log_return_jnj, seasonal = TRUE, 
-                                approximation = FALSE, trace = TRUE)
+                                approximation = FALSE, trace = TRUE, ic = "aic")
 summary(arma_model_jnj)
 
-#MCD's ARMA model
+#MCD's optimal ARMA model
 arma_model_mcd <- auto.arima(df_mcd_clean$log_return_mcd, seasonal = TRUE, 
                                 approximation = FALSE, trace = TRUE)
 summary(arma_model_mcd)
 
-#GOOGL's ARMA model
+#GOOGL's optimal ARMA model
 arma_model_googl <- auto.arima(df_googl_clean$log_return_googl, seasonal = TRUE, 
                                approximation = FALSE, trace = TRUE)
 summary(arma_model_googl)
 
 ##Diagnostic check
+#get residuals
+residuals_arma_ko <- residuals(arma_model_ko)
 residuals_arma_jnj <- residuals(arma_model_jnj)
 residuals_arma_mcd <- residuals(arma_model_mcd)
 residuals_arma_googl <- residuals(arma_model_googl)
 
-#Ljung-Box test for residuals
+#Ljung-Box test for residuals autocorrelation in KO's model
+Box.test(residuals_arma_ko, lag = 12, type = "Ljung-Box")
+
+#Ljung-Box test for residuals autocorrelation in JNJ's model
 Box.test(residuals_arma_jnj, lag = 12, type = "Ljung-Box")
+
+#Ljung-Box test for residuals autocorrelation in MCD's model
 Box.test(residuals_arma_mcd, lag = 13, type = "Ljung-Box")
+
+#Ljung-Box test for residuals autocorrelation in GOOGL's model
 Box.test(residuals_arma_googl, lag = 11, type = "Ljung-Box")
 
 #ACF and PACF plot for residuals
+acf(residuals_arma_ko, main = "ACF of KO ARMA Residuals", xlim = c(1,12))
 acf(residuals_arma_jnj, main = "ACF of JNJ ARMA Residuals", xlim = c(1,12))
 acf(residuals_arma_mcd, main = "ACF of MCD ARMA Residuals", xlim = c(1,12))
 acf(residuals_arma_googl, main = "ACF of GOOGL ARMA Residuals", xlim = c(1,12))
 
-pacf(residuals_arma_jnj, main = "ACF of JNJ ARMA Residuals", xlim = c(1,12))
-pacf(residuals_arma_mcd, main = "ACF of MCD ARMA Residuals", xlim = c(1,12))
-pacf(residuals_arma_googl, main = "ACF of GOOGL ARMA Residuals", xlim = c(1,12))
+pacf(residuals_arma_ko, main = "PACF of KO ARMA Residuals", xlim = c(1,12))
+pacf(residuals_arma_jnj, main = "PACF of JNJ ARMA Residuals", xlim = c(1,12))
+pacf(residuals_arma_mcd, main = "PACF of MCD ARMA Residuals", xlim = c(1,12))
+pacf(residuals_arma_googl, main = "PACF of GOOGL ARMA Residuals", xlim = c(1,12))
+
 
 ####2.4 Build CAPM models
 #get risk free rate fed rate
@@ -288,4 +305,100 @@ summary(lm_mcd)
 lm_googl <- lm(y_googl ~ x_googl, data = df_googl_clean) 
 summary(lm_googl)
 
+
+####2.5 Forecasting
+##out of sample forcasting
+KO_actual <- BatchGetSymbols(tickers = "KO", 
+                           first.date = "2024-01-01", 
+                           last.date = "2025-02-01", 
+                           freq = freq)
+JNJ_actual <- BatchGetSymbols(tickers = "JNJ", 
+                            first.date = "2024-01-01", 
+                            last.date = "2025-02-01", 
+                            freq = freq)
+MCD_actual <- BatchGetSymbols(tickers = "MCD", 
+                            first.date = "2024-01-01", 
+                            last.date = "2025-02-01", 
+                            freq = freq)
+GOOGL_actual <- BatchGetSymbols(tickers = "GOOGL", 
+                              first.date = "2024-01-01", 
+                              last.date = "2025-02-01", 
+                              freq = freq)
+
+
+ko_df_actual <- KO_actual$df.tickers
+jnj_df_actual <- JNJ_actual$df.tickers
+mcd_df_actual <- MCD_actual$df.tickers
+googl_df_actual <- GOOGL_actual$df.tickers
+
+
+ko_df_actual <- ko_df_actual %>%
+  dplyr::mutate(
+    Price_lag_k = lag(price.adjusted, n = 1),    
+    return_k = (price.adjusted / Price_lag_k),           
+    log_return_ko_actual = log(return_k),  
+  ) %>% na.omit()
+
+
+jnj_df_actual <- jnj_df_actual %>%
+  dplyr::mutate(
+    Price_lagj = lag(price.adjusted, n = 1),    
+    returnj = (price.adjusted / Price_lagj),           
+    log_return_jnj_actual = log(returnj),   
+  ) %>% na.omit()
+
+
+mcd_df_actual <- mcd_df_actual %>%
+  dplyr::mutate(
+    Price_lagm = lag(price.adjusted, n = 1),    
+    returnm = (price.adjusted / Price_lagm),           
+    log_return_mcd_actual = log(returnm),       
+  ) %>% na.omit()
+
+
+googl_df_actual <- googl_df_actual %>%
+  dplyr::mutate(
+    Price_lagg = lag(price.adjusted, n = 1),    
+    returng = (price.adjusted / Price_lagg),           
+    log_return_googl_actual = log(returng),   
+  ) %>% na.omit()
+
+
+# Forecast the next 12 months
+forecast_values_ko <- forecast(arma_model_ko, h = 12)$mean
+
+forecast_values_jnj <- forecast(arma_model_jnj, h = 12)$mean
+
+forecast_values_mcd <- forecast(arma_model_mcd, h = 12)$mean
+
+forecast_values_googl <- forecast(arma_model_googl, h = 12)$mean
+
+# Calculate the accuracy of out-of-sample forecast
+accuracy(forecast_values_ko, ko_df_actual$log_return_ko_actual)
+accuracy(forecast_values_jnj, jnj_df_actual$log_return_jnj_actual)
+accuracy(forecast_values_mcd, mcd_df_actual$log_return_mcd_actual)
+accuracy(forecast_values_googl,googl_df_actual$log_return_googl_actual)
+
+## in sample forecast
+fitted_values_ko <- fitted(arma_model_ko)
+fitted_values_jnj <- fitted(arma_model_jnj)
+fitted_values_mcd <- fitted(arma_model_mcd)
+fitted_values_googl <- fitted(arma_model_googl)
+
+# Extract the last 12 fitted values
+last_12_fitted_ko <- tail(fitted_values_ko, 12)
+last_12_fitted_jnj <- tail(fitted_values_jnj, 12)
+last_12_fitted_mcd <- tail(fitted_values_mcd, 12)
+last_12_fitted_googl <- tail(fitted_values_googl, 12)
+
+# Extract actual last 12 values
+actual_last_12_ko <- tail(df_ko_clean$log_return_ko, 12)
+actual_last_12_jnj <- tail(df_jnj_clean$log_return_jnj, 12)
+actual_last_12_mcd <- tail(df_mcd_clean$log_return_mcd, 12)
+actual_last_12_googl <- tail(df_googl_clean$log_return_googl, 12)
+# Calculate accuracy of in-sample forecast
+accuracy(last_12_fitted_ko, actual_last_12_ko)
+accuracy(last_12_fitted_jnj, actual_last_12_jnj)
+accuracy(last_12_fitted_mcd, actual_last_12_mcd)
+accuracy(last_12_fitted_googl, actual_last_12_googl)
 

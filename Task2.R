@@ -128,8 +128,6 @@ acf(insample_mcd$log_return_mcd,
 
 acf(insample_googl$log_return_googl, 
     main = "ACF of GOOGL Log Returns", xlim = c(1, 20)) 
-acf(insample_googl$log_return_googl, 
-    main = "ACF of GOOGL Log Returns", 48) 
 
 ##PACF plot for five stocks
 pacf(insample_nvda$log_return_nvda, 
@@ -147,9 +145,6 @@ pacf(insample_mcd$log_return_mcd,
 pacf(insample_googl$log_return_googl, 
      main = "PACF of GOOGL Log Returns", xlim = c(1, 20))
 
-pacf(insample_googl$log_return_googl, 
-     main = "PACF of GOOGL Log Returns", 48)
-
 ## Ljung-Box test using log return series
 #Ljung-Box test for NVDA's series.
 Box.test(insample_nvda$log_return_nvda, lag=12, type = "Ljung-Box")
@@ -158,7 +153,7 @@ Box.test(insample_nvda$log_return_nvda, lag=2, type = "Ljung-Box")
 #Ljung-Box test for KO's series.
 Box.test(insample_ko$log_return_ko, type = "Ljung-Box", lag = 4)
 Box.test(insample_ko$log_return_ko, type = "Ljung-Box", lag = 3)
-Box.test(insample_ko$log_return_ko, type = "Ljung-Box", lag = 10)
+Box.test(insample_ko$log_return_ko, type = "Ljung-Box", lag = 12)
 
 #Ljung-Box test for JNJ's series.
 Box.test(insample_jnj$log_return_jnj, type = "Ljung-Box", lag = 20)
@@ -172,6 +167,10 @@ Box.test(insample_mcd$log_return_mcd, type = "Ljung-Box", lag = 6)
 Box.test(insample_googl$log_return_googl, type = "Ljung-Box", lag = 12)
 Box.test(insample_googl$log_return_googl, type = "Ljung-Box", lag = 2)
 Box.test(insample_googl$log_return_googl, type = "Ljung-Box", lag = 20)
+
+#Plot log return series to identify white noise
+plot(insample_nvda$log_return_nvda,type = "l", main = "NVDA log returns", xlab = "time")
+plot(insample_googl$log_return_googl,type = "l", main = "GOOGL log returns", xlab = "time")
 
 ####2.3 Build ARMA model
 ##Identification
@@ -188,6 +187,11 @@ adf.test(insample_mcd$log_return_mcd)
 adf.test(insample_googl$log_return_googl)
 
 ##Estimation
+#NVDA's optimal ARMA model
+arma_model_nvda <- auto.arima(insample_nvda$log_return_nvda, seasonal = TRUE, 
+                              approximation = FALSE, trace = TRUE)
+summary(arma_model_nvda)
+
 #KO's optimal ARMA model
 arma_model_ko <- auto.arima(insample_ko$log_return_ko, seasonal = TRUE, 
                             max.p = 4,max.q = 4, max.d = 4,
@@ -206,11 +210,20 @@ arma_model_mcd <- auto.arima(insample_mcd$log_return_mcd, seasonal = TRUE,
                                 approximation = FALSE, trace = TRUE)
 summary(arma_model_mcd)
 
+#GOOGL's optimal ARMA model
+arma_model_googl <- auto.arima(insample_googl$log_return_googl, seasonal = TRUE, 
+                              approximation = FALSE, trace = TRUE)
+summary(arma_model_googl)
 ##Diagnostic check
 #get residuals
+residuals_arma_nvda <- residuals(arma_model_nvda)
 residuals_arma_ko <- residuals(arma_model_ko)
 residuals_arma_jnj <- residuals(arma_model_jnj)
 residuals_arma_mcd <- residuals(arma_model_mcd)
+residuals_arma_googl <- residuals(arma_model_googl)
+
+#Ljung-Box test for residuals autocorrelation in NVDA's model
+Box.test(residuals_arma_nvda, lag = 30, type = "Ljung-Box")
 
 #Ljung-Box test for residuals autocorrelation in KO's model
 Box.test(residuals_arma_ko, lag = 30, type = "Ljung-Box")
@@ -221,11 +234,17 @@ Box.test(residuals_arma_jnj, lag = 30, type = "Ljung-Box")
 #Ljung-Box test for residuals autocorrelation in MCD's model
 Box.test(residuals_arma_mcd, lag = 30, type = "Ljung-Box")
 
+#Ljung-Box test for residuals autocorrelation in GOOGL's model
+Box.test(residuals_arma_googl, lag = 30, type = "Ljung-Box")
+
 #ACF and PACF plot for residuals
+acf(residuals_arma_nvda, main = "ACF of NVDA ARMA Residuals", xlim = c(1,30))
 acf(residuals_arma_ko, main = "ACF of KO ARMA Residuals", xlim = c(1,30))
 acf(residuals_arma_jnj, main = "ACF of JNJ ARMA Residuals", xlim = c(1,30))
 acf(residuals_arma_mcd, main = "ACF of MCD ARMA Residuals", xlim = c(1,30))
+acf(residuals_arma_googl, main = "ACF of GOOGL ARMA Residuals", xlim = c(1,30))
 
+pacf(residuals_arma_nvda, main = "PACF of NVDA ARMA Residuals", xlim = c(1,30))
 pacf(residuals_arma_ko, main = "PACF of KO ARMA Residuals", xlim = c(1,30))
 pacf(residuals_arma_jnj, main = "PACF of JNJ ARMA Residuals", xlim = c(1,30))
 pacf(residuals_arma_mcd, main = "PACF of MCD ARMA Residuals", xlim = c(1,30))
@@ -350,29 +369,39 @@ outsample_googl <- outsample_googl %>%
   ) %>% na.omit()
 
 #make prediction using models built
+pred_nvda <- predict(object = arma_model_nvda,n.ahead = 12)
 pred_ko <- predict(object = arma_model_ko,n.ahead = 12)
 pred_jnj <- predict(object = arma_model_jnj,n.ahead = 12)
 pred_mcd <- predict(object = arma_model_mcd,n.ahead = 12)
 pred_googl <- predict(object = arma_model_googl,n.ahead = 12)
 
 #calculate MSE of models
+mean((pred_nvda$pred - outsample_nvda$log_return_nvda)^2)
 mean((pred_ko$pred - outsample_ko$log_return_ko)^2)
 mean((pred_jnj$pred - outsample_jnj$log_return_jnj)^2)
 mean((pred_mcd$pred - outsample_mcd$log_return_mcd)^2)
+mean((pred_googl$pred - outsample_googl$log_return_googl)^2)
 
-range(insample_ko$log_return_ko)
-range(insample_jnj$log_return_jnj)
-range(insample_mcd$log_return_mcd)
+range(outsample_ko$log_return_ko)
+range(outsample_jnj$log_return_jnj)
+range(outsample_mcd$log_return_mcd)
 
 ##compare with naive model
 #define naive model
+naive_md_nvda <- naive(insample_nvda$log_return_nvda, h=12)
 naive_md_ko <- naive(insample_ko$log_return_ko, h=12)
 naive_md_jnj <- naive(insample_jnj$log_return_jnj, h=12)
 naive_md_mcd <- naive(insample_mcd$log_return_mcd, h=12)
+naive_md_googl <- naive(insample_googl$log_return_googl, h=12)
 
+fc_nai_nvda <- forecast(naive_md_nvda)
 fc_nai_ko <- forecast(naive_md_ko)
 fc_nai_jnj <- forecast(naive_md_jnj)
 fc_nai_mcd <- forecast(naive_md_mcd)
+fc_nai_googl <- forecast(naive_md_googl)
+
+accuracy(pred_nvda$pred, outsample_nvda$log_return_nvda)
+accuracy(fc_nai_nvda, outsample_nvda$log_return_nvda)
 
 accuracy(pred_ko$pred, outsample_ko$log_return_ko)
 accuracy(fc_nai_ko, outsample_ko$log_return_ko)
@@ -383,5 +412,7 @@ accuracy(fc_nai_jnj, outsample_jnj$log_return_jnj)
 accuracy(pred_mcd$pred, outsample_mcd$log_return_mcd)
 accuracy(fc_nai_mcd, outsample_mcd$log_return_mcd)
 
-system("git push --force origin main")
+accuracy(pred_googl$pred, outsample_googl$log_return_googl)
+accuracy(fc_nai_googl, outsample_googl$log_return_googl)
+
 
